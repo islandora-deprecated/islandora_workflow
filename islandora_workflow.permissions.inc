@@ -252,11 +252,11 @@ function islandora_workflow_get_permission_state($collection, $state) {
     case 'created':
     case 'rejected':
     case 'submitted':
-      $permission[] = 'islandora_workflow_Editor';
+      $permission[] = ISLANDORA_WORKFLOW_EDITOR;
     case 'approved':
-      $permission[] = 'islandora_workflow_Manager';
+      $permission[] = ISLANDORA_WORKFLOW_MANAGER;
     default:
-      $permission[] = 'islandora_workflow_Administrator';
+      $permission[] = ISLANDORA_WORKFLOW_ADMIN;
   }
 
   $user_results = islandora_workflow_get_user_permissions(array(
@@ -278,7 +278,7 @@ function islandora_workflow_get_permission_state($collection, $state) {
     $users[] = $user['name'];
   }
 
-  $users = array_merge(islandora_workflow_user_access_list('islandora_workflow_Administrator'), $users);
+  $users = array_merge(islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_ADMIN), $users);
 
   return array('users' => $users, 'roles' => $roles);
 }
@@ -355,7 +355,7 @@ function islandora_workflow_get_all_users_with_collection_permissions($collectio
   // All users that may be in collections.
   $possible_users = islandora_workflow_get_users_with_module_permissions();
   $users = array();
-  $admins = islandora_workflow_user_access_list('islandora_workflow_Administrator');
+  $admins = islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_ADMIN);
 
   /* Make sure those users with admin rights show up for every
   collection/perm level.*/
@@ -546,27 +546,27 @@ function islandora_workflow_get_roles_with_module_permissions() {
   $privileged_roles = array();
 
   // Use user_roles for each permission individualy.
-  $admin_roles = user_roles($members_only = FALSE, 'islandora_workflow_Administrator');
-  $manager_roles = user_roles($members_only = FALSE, 'islandora_workflow_Manager');
-  $editor_roles = user_roles($members_only = FALSE, 'islandora_workflow_Editor');
-  $submitter_roles = user_roles($members_only = FALSE, 'islandora_workflow_Submitter');
+  $admin_roles = user_roles($members_only = FALSE, ISLANDORA_WORKFLOW_ADMIN);
+  $manager_roles = user_roles($members_only = FALSE, ISLANDORA_WORKFLOW_MANAGER);
+  $editor_roles = user_roles($members_only = FALSE, ISLANDORA_WORKFLOW_EDITOR);
+  $submitter_roles = user_roles($members_only = FALSE, ISLANDORA_WORKFLOW_SUBMITTER);
 
   /* Modify the returned arrays to include the permission name,
   and merge into one array [role_pid][role_name][0...4]permission*/
   foreach ($admin_roles as $role_pid => $role_name) {
-    $privileged_roles[$role_pid][$role_name][] = 'islandora_workflow_Administrator';
+    $privileged_roles[$role_pid][$role_name][] = ISLANDORA_WORKFLOW_ADMIN;
   }
 
   foreach ($manager_roles as $role_pid => $role_name) {
-    $privileged_roles[$role_pid][$role_name][] = 'islandora_workflow_Manager';
+    $privileged_roles[$role_pid][$role_name][] = ISLANDORA_WORKFLOW_MANAGER;
   }
 
   foreach ($editor_roles as $role_pid => $role_name) {
-    $privileged_roles[$role_pid][$role_name][] = 'islandora_workflow_Editor';
+    $privileged_roles[$role_pid][$role_name][] = ISLANDORA_WORKFLOW_EDITOR;
   }
 
   foreach ($submitter_roles as $role_pid => $role_name) {
-    $privileged_roles[$role_pid][$role_name][] = 'islandora_workflow_Submitter';
+    $privileged_roles[$role_pid][$role_name][] = ISLANDORA_WORKFLOW_SUBMITTER;
   }
 
   return $privileged_roles;
@@ -582,26 +582,26 @@ function islandora_workflow_get_users_with_module_permissions() {
   $privileged_users = array();
 
   // Use user_roles for each permission individualy.
-  $admin_users = islandora_workflow_user_access_list('islandora_workflow_Administrator');
-  $manager_users = islandora_workflow_user_access_list('islandora_workflow_Manager');
-  $editor_users = islandora_workflow_user_access_list('islandora_workflow_Editor');
-  $submitter_users = islandora_workflow_user_access_list('islandora_workflow_Submitter');
+  $admin_users = islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_ADMIN);
+  $manager_users = islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_MANAGER);
+  $editor_users = islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_EDITOR);
+  $submitter_users = islandora_workflow_user_access_list(ISLANDORA_WORKFLOW_SUBMITTER);
   /* Modify the returned arrays to include the permission name,
   and merge into one array [role_pid][role_name][0...4]permission. */
   foreach ($admin_users as $user_id => $user_name) {
-    $privileged_users[$user_id][$user_name]['islandora_workflow_Administrator'] = 'islandora_workflow_Administrator';
+    $privileged_users[$user_id][$user_name][ISLANDORA_WORKFLOW_ADMIN] = ISLANDORA_WORKFLOW_ADMIN;
   }
 
   foreach ($manager_users as $user_id => $user_name) {
-    $privileged_users[$user_id][$user_name]['islandora_workflow_Manager'] = 'islandora_workflow_Manager';
+    $privileged_users[$user_id][$user_name][ISLANDORA_WORKFLOW_MANAGER] = ISLANDORA_WORKFLOW_MANAGER;
   }
 
   foreach ($editor_users as $user_id => $user_name) {
-    $privileged_users[$user_id][$user_name]['islandora_workflow_Editor'] = 'islandora_workflow_Editor';
+    $privileged_users[$user_id][$user_name][ISLANDORA_WORKFLOW_EDITOR] = ISLANDORA_WORKFLOW_EDITOR;
   }
 
   foreach ($submitter_users as $user_id => $user_name) {
-    $privileged_users[$user_id][$user_name]['islandora_workflow_Submitter'] = 'islandora_workflow_Submitter';
+    $privileged_users[$user_id][$user_name][ISLANDORA_WORKFLOW_SUBMITTER] = ISLANDORA_WORKFLOW_SUBMITTER;
   }
   return $privileged_users;
 }
@@ -641,29 +641,29 @@ function islandora_workflow_user_object_permission_check($object_id, $account = 
     $account = drupal_clone($user);
   }
 
-  $manager_permissions = islandora_workflow_get_users_collections('islandora_workflow_Manager', $account);
+  $manager_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_MANAGER, $account);
 
   $parent = islandora_workflow_get_object_parent($object_id);
 
   // If the user has manager level access return true.
   if (isset($manager_permissions[$parent])) {
-    return 'islandora_workflow_Manager';
+    return ISLANDORA_WORKFLOW_MANAGER;
   }
-  $editor_permissions = islandora_workflow_get_users_collections('islandora_workflow_Editor', $account);
+  $editor_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_EDITOR, $account);
   $workflow_state = islandora_workflow_get_object_workflow_state($object_id);
 
   // Editor level.
   if (isset($editor_permissions[$parent]) && ($workflow_state == 'submitted' || $workflow_state == 'created' || $workflow_state == 'rejected')) {
-    return 'islandora_workflow_Editor';
+    return ISLANDORA_WORKFLOW_EDITOR;
   }
 
   // Even more init.
-  $submitter_permissions = islandora_workflow_get_users_collections('islandora_workflow_Submitter', $account);
+  $submitter_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_SUBMITTER, $account);
   $creator = islandora_workflow_get_object_creator($object_id);
 
   // Submitter level.
   if (isset($submitter_permissions[$parent]) && ($workflow_state == 'created' || $workflow_state == 'rejected') && $account->name == $creator) {
-    return 'islandora_workflow_Submitter';
+    return ISLANDORA_WORKFLOW_SUBMITTER;
   }
 
   // Permission denied.
@@ -682,18 +682,17 @@ function islandora_workflow_user_object_permission_check($object_id, $account = 
 function islandora_workflow_user_collection_permission_check($collection_pid) {
   module_load_include('collection.inc', 'islandora_workflow');
   module_load_include('inc', 'islandora_workflow');
-
-  $manager_permissions = islandora_workflow_get_users_collections('islandora_workflow_Manager');
+  $manager_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_MANAGER);
   if ($manager_permissions[$collection_pid]) {
-    return 'islandora_workflow_Manager';
+    return ISLANDORA_WORKFLOW_MANAGER;
   }
-  $editor_permissions = islandora_workflow_get_users_collections('islandora_workflow_Editor');
+  $editor_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_EDITOR);
   if ($editor_permissions[$collection_pid]) {
-    return 'islandora_workflow_Editor';
+    return ISLANDORA_WORKFLOW_EDITOR;
   }
-  $submitter_permissions = islandora_workflow_get_users_collections('islandora_workflow_Submitter');
+  $submitter_permissions = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_SUBMITTER);
   if ($submitter_permissions[$collection_pid]) {
-    return 'islandora_workflow_Submitter';
+    return ISLANDORA_WORKFLOW_SUBMITTER;
   }
   // Permission denied.
   return FALSE;

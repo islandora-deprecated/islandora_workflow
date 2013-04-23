@@ -103,7 +103,7 @@ function islandora_workflow_rules_defaults() {
       'settings' => array(
         'subject' => 'An object has been approved',
         'message' => 'The object <em>[object:fedora-object-title]</em> ([object:fedora-object-pid]) has been approved and is awaiting publication.',
-        'roles' => array('islandora_workflow_Editor'),
+        'roles' => array(ISLANDORA_WORKFLOW_EDITOR),
         'notify_creator' => 1,
         'notify_assignee' => 0,
       ),
@@ -117,7 +117,7 @@ function islandora_workflow_rules_defaults() {
       'settings' => array(
         'subject' => 'An object has been rejected',
         'message' => 'The object <em>[object:fedora-object-title]</em> ([object:fedora-object-pid]) has been rejected.',
-        'roles' => array('islandora_workflow_Editor'),
+        'roles' => array(ISLANDORA_WORKFLOW_EDITOR),
         'notify_creator' => 1,
         'notify_assignee' => 0,
       ),
@@ -131,7 +131,7 @@ function islandora_workflow_rules_defaults() {
       'settings' => array(
         'subject' => 'An object has been submitted',
         'message' => 'The object <em>[object:fedora-object-title]</em> ([object:fedora-object-pid]) has been submitted for approval.',
-        'roles' => array('islandora_workflow_Editor'),
+        'roles' => array(ISLANDORA_WORKFLOW_EDITOR),
         'notify_creator' => 0,
         'notify_assignee' => 0,
       ),

@@ -81,7 +81,7 @@ function islandora_workflow_reject_object($object_id) {
 
   // Permission check.
   $user_permission_level = islandora_workflow_user_object_permission_check($object_id);
-  if ($user_permission_level != 'islandora_workflow_Editor' && $user_permission_level != 'islandora_workflow_Manager') {
+  if ($user_permission_level != ISLANDORA_WORKFLOW_EDITOR && $user_permission_level != ISLANDORA_WORKFLOW_MANAGER) {
     islandora_workflow_DSM_about_object($object_id, 'could not be rejected, you do not have the necessary permissions.');
     return FALSE;
   }
@@ -136,7 +136,7 @@ function islandora_workflow_approve_object($object_id) {
 
   // Permission check.
   $tmp = islandora_workflow_user_object_permission_check($object_id);
-  if ($tmp != 'islandora_workflow_Editor' && $tmp != 'islandora_workflow_Manager') {
+  if ($tmp != ISLANDORA_WORKFLOW_EDITOR && $tmp != ISLANDORA_WORKFLOW_MANAGER) {
     islandora_workflow_DSM_about_object($object_id, 'could not be approved, you do not have the necessary permissions.');
     return FALSE;
   }
@@ -170,7 +170,7 @@ function islandora_workflow_publish_object($object_id) {
   module_load_include('inc', 'islandora_workflow', 'fedora_object_functions');
 
   // Permission check.
-  if (islandora_workflow_user_object_permission_check($object_id) != 'islandora_workflow_Manager') {
+  if (islandora_workflow_user_object_permission_check($object_id) != ISLANDORA_WORKFLOW_MANAGER) {
     islandora_workflow_DSM_about_object($object_id, 'could not be published, you do not have the necessary permissions.');
     return FALSE;
   }
@@ -646,7 +646,6 @@ function islandora_workflow_get_object_assignee($object_id) {
  *   the response from fedora for adding/modifying the relationship
  */
 function islandora_workflow_set_object_relationship($object_id, $relationship, $target, $subject = NULL, $value_type = RELS_TYPE_PLAIN_LITERAL) {
-
   module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
   $namespace = 'info:islandora/islandora-system:def/islandora_workflow#';
@@ -662,6 +661,7 @@ function islandora_workflow_set_object_relationship($object_id, $relationship, $
     return $item->add_dsid_relationship($subject, $relationship, $target, $namespace, $value_type);
   }
   else {
+    //add_relationship($relationship, $object, $namespaceURI = RELS_EXT_URI, $literal_value = RELS_TYPE_URI)
     // External relationship - use RELS-EXT.
     $item->purge_relationships($relationship, NULL, $namespace, $value_type);
     return $item->add_relationship($relationship, $target, $namespace, $value_type);

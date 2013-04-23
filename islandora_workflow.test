@@ -37,10 +37,10 @@ class IslandoraWorkflowAbstractTestCase extends DrupalWebTestCase {
     );
 
     // Create permissions.
-    $admin_permission = 'islandora_workflow_Administrator';
-    $manager_permission = 'islandora_workflow_Manager';
-    $editor_permission = 'islandora_workflow_Editor';
-    $submitter_permission = 'islandora_workflow_Submitter';
+    $admin_permission = ISLANDORA_WORKFLOW_ADMIN;
+    $manager_permission = ISLANDORA_WORKFLOW_MANAGER;
+    $editor_permission = ISLANDORA_WORKFLOW_EDITOR;
+    $submitter_permission = ISLANDORA_WORKFLOW_SUBMITTER;
     $fedora_viewer_permission = 'view fedora collection';
     $collection_manager_permission = 'manage collections';
     $ingest_permission = 'ingest new fedora objects';
@@ -113,7 +113,7 @@ class IslandoraWorkflowWebTestCase extends IslandoraWorkflowAbstractTestCase {
    */
   public function testCollectionTabsDisplay() {
     define('COLLECTION', 'islandora:sp_pdf_collection');
-    define('EDITOR_PERMISSION', 'islandora_workflow_Editor');
+    define('EDITOR_PERMISSION', ISLANDORA_WORKFLOW_EDITOR);
 
     // Step 1.
     $this->drupalLogin($this->adminUser);
