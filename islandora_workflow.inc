@@ -661,7 +661,6 @@ function islandora_workflow_set_object_relationship($object_id, $relationship, $
     return $item->add_dsid_relationship($subject, $relationship, $target, $namespace, $value_type);
   }
   else {
-    //add_relationship($relationship, $object, $namespaceURI = RELS_EXT_URI, $literal_value = RELS_TYPE_URI)
     // External relationship - use RELS-EXT.
     $item->purge_relationships($relationship, NULL, $namespace, $value_type);
     return $item->add_relationship($relationship, $target, $namespace, $value_type);

@@ -23,10 +23,10 @@ For a Drupal user to see the main workflow page they must both have appropriate 
 To start an object in the workflow call this function from islandora_workflow.inc: islandora_workflow_init_workflow($object_id)
 
 PERMISSIONS
-ISLANDORA_WORKFLOW_EDITOR
+'islandora_workflow_Editor'
 'islandora_workflow_Manager'
-ISLANDORA_WORKFLOW_ADMIN
-ISLANDORA_WORKFLOW_SUBMITTER
+'islandora_workflow_Administrator'
+'islandora_workflow_Submitter'
 
 STATES
 'created'
