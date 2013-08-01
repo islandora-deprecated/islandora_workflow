@@ -245,11 +245,10 @@ function _islandora_workflow_in_progress_by_submitter($item) {
 
 function islandora_workflow_form_alter(&$form, &$form_state, $form_id) {
   if($form_id == 'content_model_viewer_ingest_metadata_form' || $form_id == 'fedora_repository_ingest_form') {
-    //content_model_viewer_ingest_metadata_form_validate
     module_load_include('collection.inc', 'islandora_workflow');
     $collection_pid = $form_state['values']['collection_pid'];
     if (islandora_workflow_is_collection_workflow_tracked($collection_pid)) {
-      $form['submit']['#submit'][] = 'islandora_workflow_ingest_submit';
+      $form['#submit'][] = 'islandora_workflow_ingest_submit';
     }
   }
 }
