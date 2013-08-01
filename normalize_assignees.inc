@@ -117,9 +117,9 @@ function islandora_workflow_get_possible_assignees_for_collections($collections,
 
   /* @TODO: optimize this with some 'if '' is in workflow_states';
    * we don't need to know all the perms all the time.*/
-  $admins = islandora_workflow_get_all_users_with_collection_permissions($collections, 'islandora_workflow_Administrator');
-  $managers = islandora_workflow_get_all_users_with_collection_permissions($collections, 'islandora_workflow_Manager');
-  $editors = islandora_workflow_get_all_users_with_collection_permissions($collections, 'islandora_workflow_Editor');
+  $admins = islandora_workflow_get_all_users_with_collection_permissions($collections, ISLANDORA_WORKFLOW_ADMIN);
+  $managers = islandora_workflow_get_all_users_with_collection_permissions($collections, ISLANDORA_WORKFLOW_MANAGER);
+  $editors = islandora_workflow_get_all_users_with_collection_permissions($collections, ISLANDORA_WORKFLOW_EDITOR);
 
   foreach ($collections as $collection_pid) {
     // Workflow state should go here.
@@ -212,10 +212,10 @@ function islandora_workflow_get_possible_assignees($objects, $workflow_states = 
     // Get the parent collection.
     $collection_pid = islandora_workflow_get_object_parent($object_pid);
     // Get the perms on the collection.
-    $admins = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), 'islandora_workflow_Administrator');
-    $managers = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), 'islandora_workflow_Manager');
-    $editors = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), 'islandora_workflow_Editor');
-    $submitters = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), 'islandora_workflow_Submitter');
+    $admins = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), ISLANDORA_WORKFLOW_ADMIN);
+    $managers = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), ISLANDORA_WORKFLOW_MANAGER);
+    $editors = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), ISLANDORA_WORKFLOW_EDITOR);
+    $submitters = islandora_workflow_get_all_users_with_collection_permissions(array($collection_pid), ISLANDORA_WORKFLOW_SUBMITTER);
 
     // Workflow state should go here.
     foreach ($workflow_states as $workflow_state) {

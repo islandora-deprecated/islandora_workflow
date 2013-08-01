@@ -16,6 +16,11 @@
  * This module treats the object owner as the creator for its purposes.
  */
 
+define('ISLANDORA_WORKFLOW_ADMIN', 'islandora_workflow_Administrator');
+define('ISLANDORA_WORKFLOW_EDITOR', 'islandora_workflow_Editor');
+define('ISLANDORA_WORKFLOW_MANAGER', 'islandora_workflow_Manager');
+define('ISLANDORA_WORKFLOW_SUBMITTER', 'islandora_workflow_Submitter');
+
 /**
  * Check whether the current user has permission to publish workflow items.
  *
@@ -23,7 +28,7 @@
  *   TRUE if the current user has permission to publish items; FALSE otherwise.
  */
 function _islandora_workflow_publish_access() {
-  return user_access('islandora_workflow_Administrator') || user_access('islandora_workflow_Manager');
+  return user_access(ISLANDORA_WORKFLOW_ADMIN) || user_access(ISLANDORA_WORKFLOW_MANAGER);
 }
 
 /**
@@ -35,7 +40,7 @@ function _islandora_workflow_publish_access() {
  *   TRUE if the current user has permission to reject items; FALSE otherwise.
  */
 function _islandora_workflow_reject_access() {
-  return _islandora_workflow_publish_access() || user_access('islandora_workflow_Editor');
+  return _islandora_workflow_publish_access() || user_access(ISLANDORA_WORKFLOW_EDITOR);
 }
 
 /**
@@ -146,10 +151,10 @@ function _islandora_workflow_actionable_by_manager($item) {
 function _islandora_workflow_actionable_by_editor($item) {
 
   global $user;
-  
+
   if (('published' != $item['state'] && 'approved' != $item['state']) ||
     ($item['owner'] == $user->name && 'published' != $item['state'])) {
-    
+
     return TRUE;
   }
 
@@ -168,7 +173,7 @@ function _islandora_workflow_actionable_by_editor($item) {
  *   True if the user should be seeing the object, false otherwise.
  */
 function _islandora_workflow_in_progress_by_editor($item) {
-    
+
   if (!$item['owner'] && ('rejected' != $item['state'] || 'created' != $item['state'])) {
     return TRUE;
   }
@@ -220,7 +225,7 @@ function _islandora_workflow_in_progress_by_submitter($item) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_alter().
  *
  * This form alter hook runs on object ingest to determine whether or not to
  * add an object to workflow.
@@ -230,17 +235,22 @@ function _islandora_workflow_in_progress_by_submitter($item) {
  * @param array $form_state
  *   The form state
  *
+ * @param array $form_id
+ *   The form id
+ *
  * @return NULL
  *   Nothing
  * @todo: make the form have a toggle for admins/managers
  */
-function islandora_workflow_form_fedora_repository_ingest_form_alter(&$form, &$form_state) {
-  module_load_include('collection.inc', 'islandora_workflow');
-  $collection_pid = $form_state['storage']['collection_pid'];
-  if (islandora_workflow_is_collection_workflow_tracked($collection_pid)) {
-    $form['#submit'][] = 'islandora_workflow_ingest_submit';
+
+function islandora_workflow_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'content_model_viewer_ingest_metadata_form' || $form_id == 'fedora_repository_ingest_form') {
+    module_load_include('collection.inc', 'islandora_workflow');
+    $collection_pid = $form_state['values']['collection_pid'];
+    if (islandora_workflow_is_collection_workflow_tracked($collection_pid)) {
+      $form['#submit'][] = 'islandora_workflow_ingest_submit';
+    }
   }
-  return;
 }
 
 /**
@@ -271,7 +281,7 @@ function islandora_workflow_menu() {
     'title' => 'Islandora Workflow',
     'page callback' => 'islandora_workflow_collection_permissions',
     'access callback' => 'islandora_workflow_check_permissions',
-    'access arguments' => array(array('islandora_workflow_Administrator', 'islandora_workflow_Manager')),
+    'access arguments' => array(array(ISLANDORA_WORKFLOW_ADMIN, ISLANDORA_WORKFLOW_MANAGER)),
     'type' => MENU_NORMAL_ITEM,
     'description' => 'Edit workflow tracked collections and colleciton level workflow permissions.',
   );
@@ -286,7 +296,7 @@ function islandora_workflow_menu() {
     'description' => 'Here you can set what collections to track via workflow.',
     'page callback' => '_islandora_workflow_get_form',
     'page arguments' => array('islandora_workflow_collections'),
-    'access arguments' => array('islandora_workflow_Administrator'),
+    'access arguments' => array(ISLANDORA_WORKFLOW_ADMIN),
     'file' => 'islandora_workflow.forms.inc',
     'type' => MENU_LOCAL_TASK,
   );
@@ -442,25 +452,25 @@ function islandora_workflow_edit_note_form() {
 function islandora_workflow_check_permissions($permission_array) {
   module_load_include('collection.inc', 'islandora_workflow');
   module_load_include('inc', 'islandora_workflow');
-  
+
   // If the user is anonymous then return FALSE.
   if (!user_is_logged_in()) {
       return FALSE;
   }
-  
+
   // Let the user into any page if they are a workflow admin.
-  if (in_array('islandora_workflow_Administrator', $permission_array) && user_access('islandora_workflow_Administrator')) {
+  if (in_array(ISLANDORA_WORKFLOW_ADMIN, $permission_array) && user_access(ISLANDORA_WORKFLOW_ADMIN)) {
     return TRUE;
   }
-  
+
   // Loop through permissions allowed.
   foreach ($permission_array as $permission) {
     // Return true if the user has an allowed permission.
-    if ($permission != 'islandora_workflow_Administrator' && user_access($permission) && islandora_workflow_get_users_collections($permission) != FALSE) {
+    if ($permission != ISLANDORA_WORKFLOW_ADMIN && user_access($permission) && islandora_workflow_get_users_collections($permission) != FALSE) {
       return TRUE;
     }
   }
-  
+
   // If no permission matched then return false.
   return FALSE;
 }
@@ -479,7 +489,7 @@ function islandora_workflow_check_permissions($permission_array) {
 function islandora_workflow_collections(&$form_state) {
   module_load_include('inc', 'islandora_workflow');
   module_load_include('collection.inc', 'islandora_workflow');
-  
+
   if (!$form_state['storage']['workflow_collections']['inactive'] && !$form_state['storage']['workflow_collections']['active']) {
     $collection_data = islandora_workflow_get_collections();
     $tracked_option = 'workflow tracked';
@@ -631,10 +641,10 @@ function islandora_workflow_collections_submit($form, &$form_state) {
  */
 function islandora_workflow_perm() {
   return array(
-    'islandora_workflow_Administrator',
-    'islandora_workflow_Editor',
-    'islandora_workflow_Manager',
-    'islandora_workflow_Submitter',
+    ISLANDORA_WORKFLOW_ADMIN,
+    ISLANDORA_WORKFLOW_EDITOR,
+    ISLANDORA_WORKFLOW_MANAGER,
+    ISLANDORA_WORKFLOW_SUBMITTER,
   );
 }
 
@@ -835,7 +845,7 @@ function islandora_workflow_role_permissions_form(&$form_state) {
     // Populate the form, Roles.
     foreach ($current_module_permissions as $role_id => $role_name) {
       if (sizeof($current_module_permissions[$role_id][key($role_name)]) == 1) {
-        if (in_array('islandora_workflow_Administrator', $current_module_permissions[$role_id][key($role_name)])) {
+        if (in_array(ISLANDORA_WORKFLOW_ADMIN, $current_module_permissions[$role_id][key($role_name)])) {
           // This role has Admin permissions only.
           continue;
         }
@@ -843,20 +853,20 @@ function islandora_workflow_role_permissions_form(&$form_state) {
       // Add none to the possible options.
       array_unshift($current_module_permissions[$role_id][key($role_name)], '');
       // Remove the islandora_workflow_Administrator permission.
-      if (in_array('islandora_workflow_Administrator', $current_module_permissions[$role_id][key($role_name)])) {
-        unset($current_module_permissions[$role_id][key($role_name)][array_search('islandora_workflow_Administrator', $current_module_permissions[$role_id][key($role_name)])]);
+      if (in_array(ISLANDORA_WORKFLOW_ADMIN, $current_module_permissions[$role_id][key($role_name)])) {
+        unset($current_module_permissions[$role_id][key($role_name)][array_search(ISLANDORA_WORKFLOW_ADMIN, $current_module_permissions[$role_id][key($role_name)])]);
       }
       // Change the left over permission strings to be more user friendly.
-      if (in_array('islandora_workflow_Manager', $current_module_permissions[$role_id][key($role_name)])) {
-        $current_module_permissions[$role_id][key($role_name)][array_search('islandora_workflow_Manager', $current_module_permissions[$role_id][key($role_name)])] = 'Manager';
+      if (in_array(ISLANDORA_WORKFLOW_MANAGER, $current_module_permissions[$role_id][key($role_name)])) {
+        $current_module_permissions[$role_id][key($role_name)][array_search(ISLANDORA_WORKFLOW_MANAGER, $current_module_permissions[$role_id][key($role_name)])] = 'Manager';
       }
-      if (in_array('islandora_workflow_Editor', $current_module_permissions[$role_id][key($role_name)])) {
-        $current_module_permissions[$role_id][key($role_name)][array_search('islandora_workflow_Editor', $current_module_permissions[$role_id][key($role_name)])] = 'Editor';
+      if (in_array(ISLANDORA_WORKFLOW_EDITOR, $current_module_permissions[$role_id][key($role_name)])) {
+        $current_module_permissions[$role_id][key($role_name)][array_search(ISLANDORA_WORKFLOW_EDITOR, $current_module_permissions[$role_id][key($role_name)])] = 'Editor';
       }
-      if (in_array('islandora_workflow_Submitter', $current_module_permissions[$role_id][key($role_name)])) {
-        $current_module_permissions[$role_id][key($role_name)][array_search('islandora_workflow_Submitter', $current_module_permissions[$role_id][key($role_name)])] = 'Submitter';
+      if (in_array(ISLANDORA_WORKFLOW_SUBMITTER, $current_module_permissions[$role_id][key($role_name)])) {
+        $current_module_permissions[$role_id][key($role_name)][array_search(ISLANDORA_WORKFLOW_SUBMITTER, $current_module_permissions[$role_id][key($role_name)])] = 'Submitter';
       }
-      
+
       // Remove the editor and manager permissions from the anonymous role.
       if ($role_id == 1) {
         foreach ($current_module_permissions[$role_id][key($role_name)] as $key => $permission) {
@@ -865,7 +875,7 @@ function islandora_workflow_role_permissions_form(&$form_state) {
           }
         }
       }
-      
+
       $collection_id = $_SESSION['workflow_permissions_page']['active_collection'];
 
       /* Change the default permission
@@ -873,13 +883,13 @@ function islandora_workflow_role_permissions_form(&$form_state) {
       $default_value = '';
       if (array_key_exists($role_id, $current_collection_permissions)) {
         if (array_key_exists($collection_id, $current_collection_permissions[$role_id])) {
-          if ($current_collection_permissions[$role_id][$collection_id] == 'islandora_workflow_Manager') {
+          if ($current_collection_permissions[$role_id][$collection_id] == ISLANDORA_WORKFLOW_MANAGER) {
             $current_collection_permissions[$role_id][$collection_id] = 'Manager';
           }
-          if ($current_collection_permissions[$role_id][$collection_id] == 'islandora_workflow_Editor') {
+          if ($current_collection_permissions[$role_id][$collection_id] == ISLANDORA_WORKFLOW_EDITOR) {
             $current_collection_permissions[$role_id][$collection_id] = 'Editor';
           }
-          if ($current_collection_permissions[$role_id][$collection_id] == 'islandora_workflow_Submitter') {
+          if ($current_collection_permissions[$role_id][$collection_id] == ISLANDORA_WORKFLOW_SUBMITTER) {
             $current_collection_permissions[$role_id][$collection_id] = 'Submitter';
           }
           $default_value = array_search($current_collection_permissions[$role_id][$collection_id], $current_module_permissions[$role_id][key($role_name)]);
@@ -936,13 +946,13 @@ function islandora_workflow_role_permissions_form_submit($form, &$form_state) {
           $select_element_value = $form['islandora_workflow_collection_permissions_table']['permissions_table'][$role_id][$collection_id]['#options'][$select_element_index];
           // Remap user friendly element option values to permission names.
           if ($select_element_value == 'Manager') {
-            $select_element_value = 'islandora_workflow_Manager';
+            $select_element_value = ISLANDORA_WORKFLOW_MANAGER;
           }
           elseif ($select_element_value == 'Editor') {
-            $select_element_value = 'islandora_workflow_Editor';
+            $select_element_value = ISLANDORA_WORKFLOW_EDITOR;
           }
           elseif ($select_element_value == 'Submitter') {
-            $select_element_value = 'islandora_workflow_Submitter';
+            $select_element_value = ISLANDORA_WORKFLOW_SUBMITTER;
           }
 
           /* Compare the form values against the
@@ -1129,18 +1139,18 @@ function islandora_workflow_user_permissions_form(&$form_state) {
       // Add none to the possible options.
       array_unshift($current_module_permissions[$user_id][key($user_name)], '');
       // Rmove the islandora_workflow_Administrator permission.
-      if (in_array('islandora_workflow_Administrator', $current_module_permissions[$user_id][key($user_name)])) {
-        unset($current_module_permissions[$user_id][key($user_name)][array_search('islandora_workflow_Administrator', $current_module_permissions[$user_id][key($user_name)])]);
+      if (in_array(ISLANDORA_WORKFLOW_ADMIN, $current_module_permissions[$user_id][key($user_name)])) {
+        unset($current_module_permissions[$user_id][key($user_name)][array_search(ISLANDORA_WORKFLOW_ADMIN, $current_module_permissions[$user_id][key($user_name)])]);
       }
       // Change the left over permission strings to be more user friendly.
-      if (in_array('islandora_workflow_Manager', $current_module_permissions[$user_id][key($user_name)])) {
-        $current_module_permissions[$user_id][key($user_name)][array_search('islandora_workflow_Manager', $current_module_permissions[$user_id][key($user_name)])] = 'Manager';
+      if (in_array(ISLANDORA_WORKFLOW_MANAGER, $current_module_permissions[$user_id][key($user_name)])) {
+        $current_module_permissions[$user_id][key($user_name)][array_search(ISLANDORA_WORKFLOW_MANAGER, $current_module_permissions[$user_id][key($user_name)])] = 'Manager';
       }
-      if (in_array('islandora_workflow_Editor', $current_module_permissions[$user_id][key($user_name)])) {
-        $current_module_permissions[$user_id][key($user_name)][array_search('islandora_workflow_Editor', $current_module_permissions[$user_id][key($user_name)])] = 'Editor';
+      if (in_array(ISLANDORA_WORKFLOW_EDITOR, $current_module_permissions[$user_id][key($user_name)])) {
+        $current_module_permissions[$user_id][key($user_name)][array_search(ISLANDORA_WORKFLOW_EDITOR, $current_module_permissions[$user_id][key($user_name)])] = 'Editor';
       }
-      if (in_array('islandora_workflow_Submitter', $current_module_permissions[$user_id][key($user_name)])) {
-        $current_module_permissions[$user_id][key($user_name)][array_search('islandora_workflow_Submitter', $current_module_permissions[$user_id][key($user_name)])] = 'Submitter';
+      if (in_array(ISLANDORA_WORKFLOW_SUBMITTER, $current_module_permissions[$user_id][key($user_name)])) {
+        $current_module_permissions[$user_id][key($user_name)][array_search(ISLANDORA_WORKFLOW_SUBMITTER, $current_module_permissions[$user_id][key($user_name)])] = 'Submitter';
       }
       $collection_id = $_SESSION['workflow_permissions_page']['active_collection'];
       /* Change the default permission string to be
@@ -1148,13 +1158,13 @@ function islandora_workflow_user_permissions_form(&$form_state) {
       $default_value = '';
       if (array_key_exists($user_id, $current_collection_permissions)) {
         if (array_key_exists($collection_id, $current_collection_permissions[$user_id])) {
-          if ($current_collection_permissions[$user_id][$collection_id] == 'islandora_workflow_Manager') {
+          if ($current_collection_permissions[$user_id][$collection_id] == ISLANDORA_WORKFLOW_MANAGER) {
             $current_collection_permissions[$user_id][$collection_id] = 'Manager';
           }
-          if ($current_collection_permissions[$user_id][$collection_id] == 'islandora_workflow_Editor') {
+          if ($current_collection_permissions[$user_id][$collection_id] == ISLANDORA_WORKFLOW_EDITOR) {
             $current_collection_permissions[$user_id][$collection_id] = 'Editor';
           }
-          if ($current_collection_permissions[$user_id][$collection_id] == 'islandora_workflow_Submitter') {
+          if ($current_collection_permissions[$user_id][$collection_id] == ISLANDORA_WORKFLOW_SUBMITTER) {
             $current_collection_permissions[$user_id][$collection_id] = 'Submitter';
           }
           $default_value = array_search($current_collection_permissions[$user_id][$collection_id], $current_module_permissions[$user_id][key($user_name)]);
@@ -1211,13 +1221,13 @@ function islandora_workflow_user_permissions_form_submit($form, &$form_state) {
           $select_element_value = $form['islandora_workflow_collection_permissions_table']['permissions_table'][$user_id][$collection_id]['#options'][$select_element_index];
           // Remap user friendly element option values to permission names.
           if ($select_element_value == 'Manager') {
-            $select_element_value = 'islandora_workflow_Manager';
+            $select_element_value = ISLANDORA_WORKFLOW_MANAGER;
           }
           elseif ($select_element_value == 'Editor') {
-            $select_element_value = 'islandora_workflow_Editor';
+            $select_element_value = ISLANDORA_WORKFLOW_EDITOR;
           }
           elseif ($select_element_value == 'Submitter') {
-            $select_element_value = 'islandora_workflow_Submitter';
+            $select_element_value = ISLANDORA_WORKFLOW_SUBMITTER;
           }
 
           /* Compare the form values against the database
@@ -1571,7 +1581,7 @@ function islandora_workflow_islandora_tabs_alter(&$tabs, $params) {
 
   if (module_exists('islandora_collection_manager')) {
     // Restrict the 'Manage This Collection' tab to managers and above.
-    $management_access = ('islandora_workflow_Manager' == $permission);
+    $management_access = (ISLANDORA_WORKFLOW_MANAGER == $permission);
     if (!$management_access) {
       unset($tabs['add_collection_tab']);
     }

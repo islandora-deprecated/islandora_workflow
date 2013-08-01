@@ -113,10 +113,10 @@ function islandora_workflow_work_form_main(&$form_state, $tab) {
 
       // Show everything created by the user except for submitters.
       // Show everything created by and in a created state to submitters.
-      $manager_collections = islandora_workflow_get_users_collections('islandora_workflow_Manager');
-      $editor_collections = islandora_workflow_get_users_collections('islandora_workflow_Editor');
+      $manager_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_MANAGER);
+      $editor_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_EDITOR);
       $editor_collections = array_diff_key($editor_collections, $manager_collections);
-      $submitter_collections = islandora_workflow_get_users_collections('islandora_workflow_Submitter');
+      $submitter_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_SUBMITTER);
       $submitter_collections = array_diff_key($submitter_collections, $manager_collections, $editor_collections);
 
       $submitter_objects_to_ommit = array();
@@ -143,10 +143,10 @@ function islandora_workflow_work_form_main(&$form_state, $tab) {
       break;
 
     case 'unpublished':
-      $manager_collections = islandora_workflow_get_users_collections('islandora_workflow_Manager');
-      $editor_collections = islandora_workflow_get_users_collections('islandora_workflow_Editor');
+      $manager_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_MANAGER);
+      $editor_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_EDITOR);
       $editor_collections = array_diff_key($editor_collections, $manager_collections);
-      $submitter_collections = islandora_workflow_get_users_collections('islandora_workflow_Submitter');
+      $submitter_collections = islandora_workflow_get_users_collections(ISLANDORA_WORKFLOW_SUBMITTER);
       $submitter_collections = array_diff_key($submitter_collections, $manager_collections, $editor_collections);
 
       foreach ($manager_collections as $collection_pid => $attributes) {

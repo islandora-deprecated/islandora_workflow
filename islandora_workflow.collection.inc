@@ -184,7 +184,7 @@ function islandora_workflow_get_users_collections($permission_level = NULL, $acc
   global $user;
 
   if (is_null($permission_level)) {
-    $permission_level = 'islandora_workflow_Manager';
+    $permission_level = ISLANDORA_WORKFLOW_MANAGER;
   }
 
   if (empty($account)) {
@@ -193,7 +193,7 @@ function islandora_workflow_get_users_collections($permission_level = NULL, $acc
 
   $permitted_collections = array();
   $collection_list = array();
-  if (user_access('islandora_workflow_Administrator', $account) || user_access('administer', $account)) {
+  if (user_access(ISLANDORA_WORKFLOW_ADMIN, $account) || user_access('administer', $account)) {
     // Admin show all.
     $collection_list = islandora_workflow_get_collections();
   }
