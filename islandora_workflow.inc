@@ -285,10 +285,16 @@ function islandora_workflow_assign_object($object_id, $user_name) {
     return FALSE;
   }
 
-  $item = new Fedora_Item($object_id);
-  rules_invoke_event('islandora_workflow_rules_assign_object', $item);
+
   // Assign object.
-  return (islandora_workflow_set_object_relationship($object_id, 'assignee', $user_name));
+  if(islandora_workflow_set_object_relationship($object_id, 'assignee', $user_name)) {
+    $item = new Fedora_Item($object_id);
+    rules_invoke_event('islandora_workflow_rules_assign_object', $item);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
